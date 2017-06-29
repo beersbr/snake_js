@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Snake</title>
+	<script type="text/javascript">
+	window.onload = function() {
+		let canvas = document.getElementById('gc');
+		let ctx = canvas.getContext('2d');
+
+		let width = height = 300;
+		canvas.width = width;
+		canvas.height = height;
+
+		let tile_width = tile_height = 20;
+		let tiles_x = parseInt(width/tile_width);
+		let tiles_y = parseInt(height/tile_height);
+
+		let apple_x = apple_y = 2;
+
+		let snake_x = snake_y = 7;
+		let snake_dir_x = 0, snake_dir_y = -1;
+		let keydown = {};
+
+		let snake = [[snake_x, snake_y]];
+
+		window.onkeydown = function(evt){
+			keydown[evt.key] = true;
+		}
+
+		let last_tick = + new Date();
+
+		function updateAndRender() {
+			let current_time = + new Date();
+
+			if ( current_time - last_tick >= (1000/8)) {
+				last_tick = current_time;
+
+				if ( snake_dir_x != 0 ) {
+					if ( keydown['w'] ) {
+						snake_dir_x = 0; 
+						snake_dir_y = -1;
+					}
+					else if ( keydown['s'] ) {
+						snake_dir_x = 0; 
+						snake_dir_y = 1;	
+					}
+				}
+				else if ( snake_dir_y != 0 ) {
+					if ( keydown['a'] ) {
+						snake_dir_x = -1;
+						snake_dir_y = 0;
+					}
+					else if ( keydown['d'] ) {
+						snake_dir_x = 1;
+						snake_dir_y = 0;
+					}
+				}
+
+				let new_pos = [(snake[0][0]+snake_dir_x + tiles_x) % tiles_x, (snake[0][1]+snake_dir_y + tiles_y) % tiles_y];
+				if ( snake.findIndex(function(a) { return (a[0] == new_pos[0] && a[1] == new_pos[1]); }) >= 0) {
+					snake = [[snake_x, snake_y]];
+				}
+				else if ( new_pos[0] == apple_x && new_pos[1] == apple_y ) {
+					snake.unshift(new_pos);
+					apple_x = parseInt(Math.random() * tiles_x);
+					apple_y = parseInt(Math.random() * tiles_y);
+				}
+				else {
+					snake.unshift(new_pos);
+					snake.pop();
+				}
+
+				keydown = {};
+			}
+
+			ctx.fillStyle = "#000";
+			ctx.fillRect(0, 0, width, height);
+
+			ctx.fillStyle = "#800";
+			ctx.fillRect(apple_x * tile_width, apple_y * tile_height, tile_width, tile_height);
+
+			ctx.fillStyle = "#0A0";
+			snake.forEach(function(p, i) {
+				ctx.fillRect(p[0] * tile_width, p[1] * tile_height, tile_width, tile_height);
+			});
+
+			window.requestAnimationFrame(updateAndRender);
+		}
+
+		updateAndRender();
+	};
+
+
+	</script>
+</head>
+<body>
+<canvas id="gc"></canvas>
+</body>
+</html>
